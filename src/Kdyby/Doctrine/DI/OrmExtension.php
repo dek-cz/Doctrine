@@ -229,20 +229,24 @@ class OrmExtension extends Nette\DI\CompilerExtension
     protected function loadConsole()
     {
         $builder = $this->getContainerBuilder();
-        $consoleApplDef = $builder->getDefinition('console.application');
-        $consoleApplDef->addSetup('?->getHelperSet()->set(?)', ['@self', new Statement(ContainerHelper::class)]);
+        if ($builder->hasDefinition('console.application')) {
+            $consoleApplDef = $builder->getDefinition('console.application');
+            $consoleApplDef->addSetup('?->getHelperSet()->set(?)', ['@self', new Statement(ContainerHelper::class)]);
 
-        foreach ($this->consoleCommands as $name => $command) {
-            $cli = $builder->addDefinition($this->prefix(str_replace([':', '-', '_'], ['', '', ''], $name)))
-                ->addTag('console.command', $name)
-                ->setAutowired(false)
-                ->addTag(Nette\DI\Extensions\InjectExtension::TAG_INJECT, FALSE); // lazy injects
+            foreach ($this->consoleCommands as $name => $command) {
+                $cli = $builder->addDefinition($this->prefix(str_replace([':', '-', '_'], ['', '', ''], $name)))
+                    ->addTag('console.command', $name)
+                    ->setAutowired(false)
+                    ->addTag(Nette\DI\Extensions\InjectExtension::TAG_INJECT, FALSE); // lazy injects
 
-            if (is_string($command)) {
-                $cli->setClass($command);
-            } else {
-                throw new Kdyby\Doctrine\NotSupportedException;
+                if (is_string($command)) {
+                    $cli->setClass($command);
+                } else {
+                    throw new Kdyby\Doctrine\NotSupportedException;
+                }
             }
+        } else {
+            // consoleMode must be true on CLI
         }
     }
 
