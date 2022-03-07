@@ -23,7 +23,7 @@
         "nette/di": "^3.0",
         "nette/utils": "^3.0",
         "nette/finder": "^2.5",
-        "contributte/console": "^0.9"
+        "contributte/console": "^0.10.x-dev"
     },
     "suggest": {
         "kdyby/doctrine-magic-accessors": "Fast-prototyping magic accessors trait for Doctrine entities",
