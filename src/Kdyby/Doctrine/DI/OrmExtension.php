@@ -29,6 +29,7 @@ use Kdyby\Annotations\DI\AnnotationsExtension;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
 use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
 use Kdyby\Doctrine\Console\ContainerHelper;
+use Contributte\Console\DI\ConsoleExtension;
 
 /**
  * @author Filip Procházka <filip@prochazka.su>
@@ -214,8 +215,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
                 $listener->addSetup('addResolveTargetEntity', [$originalEntity, $mapping['targetEntity'], $mapping]);
             }
         }
-
-        $this->loadConsole();
+        if ($this->isRegisteredConsoleExtension()) {
+            $this->loadConsole();
+        }
 
         $builder->addDefinition($this->prefix('registry'))
             ->setFactory(Kdyby\Doctrine\Registry::class, [
@@ -226,16 +228,28 @@ class OrmExtension extends Nette\DI\CompilerExtension
         ]);
     }
 
+    private function isRegisteredConsoleExtension()
+    {
+        foreach ($this->compiler->getExtensions() as $extension) {
+            if ($extension instanceof ConsoleExtension) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function loadConsole()
     {
         $builder = $this->getContainerBuilder();
+        // only on CLI, see: consoleMode
         if ($builder->hasDefinition('console.application')) {
             $consoleApplDef = $builder->getDefinition('console.application');
             $consoleApplDef->addSetup('?->getHelperSet()->set(?)', ['@self', new Statement(ContainerHelper::class)]);
 
             foreach ($this->consoleCommands as $name => $command) {
                 $cli = $builder->addDefinition($this->prefix(str_replace([':', '-', '_'], ['', '', ''], $name)))
-                    ->addTag('console.command', $name)
+                    ->addTag(ConsoleExtension::COMMAND_TAG, $name)
                     ->setAutowired(false)
                     ->addTag(Nette\DI\Extensions\InjectExtension::TAG_INJECT, FALSE); // lazy injects
 
@@ -245,8 +259,6 @@ class OrmExtension extends Nette\DI\CompilerExtension
                     throw new Kdyby\Doctrine\NotSupportedException;
                 }
             }
-        } else {
-            // consoleMode must be true on CLI
         }
     }
 
