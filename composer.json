@@ -16,7 +16,7 @@
         "psr/cache": "^1.0.1",
         "doctrine/orm": "^2.7",
         "doctrine/dbal": "~2.10",
-        "doctrine/common": "~2.13",
+        "doctrine/common": "~2.13.3",
         "kdyby/annotations": "^3.0",
         "kdyby/doctrine-cache": "^3.0",
         "kdyby/strict-objects": "^2.0",
