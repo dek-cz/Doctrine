@@ -19,8 +19,8 @@ $ composer require dek-cz/doctrine
 Documentation
 ------------
 
-Learn more in the [documentation](https://github.com/Kdyby/Doctrine/blob/master/docs/en/index.md).
+Learn more in the [documentation](https://github.com/dek-cz/Doctrine/blob/master/docs/en/index.md).
 
 -----
 
-Homepage [http://www.kdyby.org](http://www.kdyby.org) and repository [http://github.com/kdyby/doctrine](http://github.com/kdyby/doctrine).
+Homepage [http://www.kdyby.org](http://www.kdyby.org) and repository [http://github.com/kdyby/doctrine](http://github.com/dek-cz/doctrine).
