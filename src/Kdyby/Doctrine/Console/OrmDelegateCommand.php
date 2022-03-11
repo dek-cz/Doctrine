@@ -25,7 +25,7 @@ use Kdyby\Doctrine\Tools\CacheCleaner;
 abstract class OrmDelegateCommand extends Command
 {
 
-    use \Kdyby\StrictObjects\Scream;
+    use \Nette\SmartObject;
 
     /**
      * @var \Symfony\Component\Console\Command\Command
