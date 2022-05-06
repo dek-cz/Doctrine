@@ -96,7 +96,7 @@ class RepositoryFactory implements Doctrine\ORM\Repository\RepositoryFactory
         $defaultClass = $entityManager->getConfiguration()->getDefaultRepositoryClassName();
         /* @var string $customClass */
         $customClass = $metadata->customRepositoryClassName ?: '';
-        $customClass = ltrim($metadata->customRepositoryClassName, '\\');
+        $customClass = ltrim($customClass, '\\');
 
         if (empty($customClass) || $customClass === $defaultClass) {
             $factory = $this->getRepositoryFactory($this->defaultRepositoryFactory);
