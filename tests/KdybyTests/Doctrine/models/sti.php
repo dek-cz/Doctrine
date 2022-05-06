@@ -37,12 +37,12 @@ abstract class StiUser
 	public $id;
 
 	/**
-	 * @ORM\Column(type="string", length=255, unique=true)
+	 * @ORM\Column(type="string", length="255", unique="true")
 	 */
 	public $username;
 
 	/**
-	 * @ORM\Column(type="string", length=255)
+	 * @ORM\Column(type="string", length="255")
 	 */
 	public $name;
 
