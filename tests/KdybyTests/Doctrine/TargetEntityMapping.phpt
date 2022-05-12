@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Test: \Kdyby\Doctrine\Mapping\ClassMetadataFactory and aliasing
  *
@@ -11,6 +10,8 @@
 namespace KdybyTests\Doctrine;
 
 use Doctrine\Common\Cache\FilesystemCache;
+use Doctrine\Common\Cache\VoidCache;
+use Doctrine\Common\Cache\Psr6\CacheAdapter;
 use Kdyby;
 use Kdyby\Doctrine\Events;
 use KdybyTests;
@@ -20,132 +21,128 @@ use Tester\Assert;
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/models/cms.php';
 
-
-
 /**
  * @author David Matějka <matej21@matej21.cz>
  */
 class TargetEntityMapping extends ORMTestCase
 {
 
-	protected function setUp()
-	{
-		// these tests are sensitive to cache
-		Tester\Helpers::purge(TEMP_DIR);
-	}
+    protected function setUp()
+    {
+        // these tests are sensitive to cache
+        Tester\Helpers::purge(TEMP_DIR);
+    }
 
+    public function testInterface()
+    {
+        $em = $this->createMemoryManagerWithFilesytemMetadataCache();
+        //fake cache required
+        $cache = new VoidCache();
+        $psr6Cache = CacheAdapter::wrap($cache);
+        $em->getMetadataFactory()->setCache($psr6Cache);
 
+        $metadataEventSubscriber = new MetadataEventSubscriberMock();
+        /** @var \Kdyby\Events\EventManager $evm */
+        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        $evm->addEventSubscriber($metadataEventSubscriber);
 
-	public function testInterface()
-	{
-		$em = $this->createMemoryManagerWithFilesytemMetadataCache();
-		$em->getMetadataFactory()->setCacheDriver();
+        $meta = $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
 
-		$metadataEventSubscriber = new MetadataEventSubscriberMock();
-		/** @var \Kdyby\Events\EventManager $evm */
-		$evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		$evm->addEventSubscriber($metadataEventSubscriber);
+        Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta->getName());
 
-		$meta = $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        Assert::count(1, $metadataEventSubscriber->onClassMetadataNotFoundCalled);
+        Assert::count(1, $metadataEventSubscriber->loadClassMetadataCalled);
 
-		Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta->getName());
+        $em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
 
-		Assert::count(1, $metadataEventSubscriber->onClassMetadataNotFoundCalled);
-		Assert::count(1, $metadataEventSubscriber->loadClassMetadataCalled);
+        $metadataEventSubscriber2 = new MetadataEventSubscriberMock();
+        /** @var \Kdyby\Events\EventManager $evm */
+        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        $evm->addEventSubscriber($metadataEventSubscriber2);
 
-		$em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
+        $meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
 
-		$metadataEventSubscriber2 = new MetadataEventSubscriberMock();
-		/** @var \Kdyby\Events\EventManager $evm */
-		$evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		$evm->addEventSubscriber($metadataEventSubscriber2);
+        Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta2->getName());
 
-		$meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
+        Assert::count(1, $metadataEventSubscriber2->onClassMetadataNotFoundCalled);
+        Assert::count(1, $metadataEventSubscriber2->loadClassMetadataCalled);
+    }
 
-		Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta2->getName());
+    public function testRealName()
+    {
+        $em = $this->createMemoryManagerWithFilesytemMetadataCache();
 
-		Assert::count(1, $metadataEventSubscriber2->onClassMetadataNotFoundCalled);
-		Assert::count(1, $metadataEventSubscriber2->loadClassMetadataCalled);
-	}
+        $metadataEventSubscriber = new MetadataEventSubscriberMock();
+        /** @var \Kdyby\Events\EventManager $evm */
+        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        $evm->addEventSubscriber($metadataEventSubscriber);
 
+        $meta = $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
 
+        Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta->getName());
 
-	public function testRealName()
-	{
-		$em = $this->createMemoryManagerWithFilesytemMetadataCache();
+        Assert::count(0, $metadataEventSubscriber->onClassMetadataNotFoundCalled);
+        Assert::count(1, $metadataEventSubscriber->loadClassMetadataCalled);
 
-		$metadataEventSubscriber = new MetadataEventSubscriberMock();
-		/** @var \Kdyby\Events\EventManager $evm */
-		$evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		$evm->addEventSubscriber($metadataEventSubscriber);
+        $em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
 
-		$meta = $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $metadataEventSubscriber2 = new MetadataEventSubscriberMock();
+        /** @var \Kdyby\Events\EventManager $evm */
+        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        $evm->addEventSubscriber($metadataEventSubscriber2);
 
-		Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta->getName());
+        $meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
 
-		Assert::count(0, $metadataEventSubscriber->onClassMetadataNotFoundCalled);
-		Assert::count(1, $metadataEventSubscriber->loadClassMetadataCalled);
+        Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta2->getName());
 
-		$em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
+        Assert::count(0, $metadataEventSubscriber2->onClassMetadataNotFoundCalled);
+        Assert::count(0, $metadataEventSubscriber2->loadClassMetadataCalled);
+    }
 
-		$metadataEventSubscriber2 = new MetadataEventSubscriberMock();
-		/** @var \Kdyby\Events\EventManager $evm */
-		$evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		$evm->addEventSubscriber($metadataEventSubscriber2);
+    public function testListenersExists()
+    {
+        $em = $this->createMemoryManagerWithFilesytemMetadataCache();
 
-		$meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
-		$em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
+        /** @var \Kdyby\Events\EventManager $evm */
+        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        $loadClassMetadata = $evm->getListeners(Events::loadClassMetadata);
+        $onClassMetadataNotFound = $evm->getListeners(Events::onClassMetadataNotFound);
 
-		Assert::same(\KdybyTests\Doctrine\CmsAddress::class, $meta2->getName());
+        $filterRTEL = function (array $items) {
+            return array_filter($items, function ($item) {
+            return $item instanceof Kdyby\Doctrine\Tools\ResolveTargetEntityListener;
+        });
+        };
+        Assert::count(1, $filterRTEL($loadClassMetadata));
+        Assert::count(1, $filterRTEL($onClassMetadataNotFound));
+    }
 
-		Assert::count(0, $metadataEventSubscriber2->onClassMetadataNotFoundCalled);
-		Assert::count(0, $metadataEventSubscriber2->loadClassMetadataCalled);
-	}
+    /**
+     * @return \Kdyby\Doctrine\EntityManager
+     */
+    private function createMemoryManagerWithFilesytemMetadataCache()
+    {
+        $em = $this->createMemoryManager([
+            __DIR__ . '/config/events.neon',
+        ]);
 
-
-
-	public function testListenersExists()
-	{
-		$em = $this->createMemoryManagerWithFilesytemMetadataCache();
-
-		/** @var \Kdyby\Events\EventManager $evm */
-		$evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		$loadClassMetadata = $evm->getListeners(Events::loadClassMetadata);
-		$onClassMetadataNotFound = $evm->getListeners(Events::onClassMetadataNotFound);
-
-		$filterRTEL = function (array $items) {
-			return array_filter($items, function ($item) {
-				return $item instanceof Kdyby\Doctrine\Tools\ResolveTargetEntityListener;
-			});
-		};
-		Assert::count(1, $filterRTEL($loadClassMetadata));
-		Assert::count(1, $filterRTEL($onClassMetadataNotFound));
-	}
-
-
-
-	/**
-	 * @return \Kdyby\Doctrine\EntityManager
-	 */
-	private function createMemoryManagerWithFilesytemMetadataCache()
-	{
-		$em = $this->createMemoryManager([
-			__DIR__ . '/config/events.neon',
-		]);
-		$em->getMetadataFactory()->setCacheDriver(new FilesystemCache(TEMP_DIR . '/doctrine'));
-		return $em;
-	}
+        $cache = new FilesystemCache(TEMP_DIR . '/doctrine');
+        $psr6Cache = CacheAdapter::wrap($cache);
+        $em->getMetadataFactory()->setCache($psr6Cache);
+        return $em;
+    }
 
 }
 

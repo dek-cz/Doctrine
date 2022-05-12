@@ -13,8 +13,8 @@
     ],
     "require": {
         "php": "^8.0",
-        "psr/cache": "^1.0.1",
-        "doctrine/orm": "~2.9.6",
+        "psr/cache": "^1.0",
+        "doctrine/orm": "^2.9",
         "doctrine/dbal": "~2.13",
         "doctrine/common": "^3.0",
         "dek-cz/annotations": "^3.0.3",
