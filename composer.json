@@ -14,16 +14,19 @@
     "require": {
         "php": "^8.0",
         "psr/cache": "^1.0",
-        "doctrine/orm": "^2.9",
-        "doctrine/dbal": "~2.13",
-        "doctrine/common": "^3.0",
+        "doctrine/orm": "^2.9 <2.13",
+        "doctrine/dbal": "~2.13.8",
+        "doctrine/common": "^3.3",
+        "doctrine/collections": "^1.6.8",
+        "doctrine/persistence": "^3.0",
         "dek-cz/annotations": "^3.0.3",
         "dek-cz/doctrine-cache": "^3.1.2",
-        "nette/di": "^3.0",
+        "nette/di": "^3.0.12",
         "nette/utils": "^3.1",
         "nette/finder": "^2.5",
         "contributte/console": "^0.10.x-dev",
-        "nette/php-generator": "^3.6"
+        "nette/php-generator": "^3.6.6",
+        "symfony/console": "^6.0"
     },
     "suggest": {
         "kdyby/doctrine-magic-accessors": "Fast-prototyping magic accessors trait for Doctrine entities",
@@ -33,9 +36,9 @@
     },
     "require-dev": {
         "kdyby/events": "^3.1.1@dev",
-        "nette/bootstrap": "^3.0",
-        "nette/caching": "^3.0",
-        "nette/http": "^3.0",
+        "nette/bootstrap": "^3.1",
+        "nette/caching": "^3.1",
+        "nette/http": "^3.1",
         "tracy/tracy": "^2.8",
         "nette/tester": "^2.4",
         "phpstan/phpstan": "^0.12.69",
