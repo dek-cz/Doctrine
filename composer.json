@@ -20,7 +20,7 @@
         "php": "^8.2",
         "psr/cache": "^1.0",
         "doctrine/orm": "^2.9 <2.13",
-        "doctrine/dbal": "dev-2.13.x_php82",
+        "doctrine/dbal": "~2.13.10",
         "doctrine/common": "^3.3",
         "doctrine/collections": "^1.6.8",
         "doctrine/persistence": "^3.0",
