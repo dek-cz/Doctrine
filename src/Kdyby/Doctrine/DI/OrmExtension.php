@@ -411,10 +411,11 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         $builder->addFactoryDefinition($this->prefix('repositoryFactory.' . $name . '.defaultRepositoryFactory'))
             ->setImplement(IRepositoryFactory::class)
-            ->setParameters([EntityManagerInterface::class . ' entityManager', Doctrine\ORM\Mapping\ClassMetadata::class . ' classMetadata'])
             ->getResultDefinition()
             ->setFactory($config['defaultRepositoryClassName'])
+            ->setType(Doctrine\ORM\EntityRepository::class)
             ->setArguments([new Code\PhpLiteral('$entityManager'), new Code\PhpLiteral('$classMetadata')])
+//            ->setParameters([EntityManagerInterface::class . ' entityManager', Doctrine\ORM\Mapping\ClassMetadata::class . ' classMetadata'])
             ->setAutowired(FALSE);
 
         $builder->addDefinition($this->prefix($name . '.schemaValidator'))

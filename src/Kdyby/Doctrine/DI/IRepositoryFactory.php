@@ -12,6 +12,8 @@ namespace Kdyby\Doctrine\DI;
 
 use Doctrine\ORM;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Kdyby;
 use Nette;
 
@@ -24,10 +26,10 @@ interface IRepositoryFactory
 {
 
 	/**
-	 * @param ORM\EntityManagerInterface $entityManager
-	 * @param ORM\Mapping\ClassMetadata $classMetadata
+	 * @param EntityManagerInterface $em
+	 * @param ClassMetadata $class
 	 * @return EntityRepository
 	 */
-	public function create(ORM\EntityManagerInterface $entityManager, ORM\Mapping\ClassMetadata $classMetadata);
+	public function create(EntityManagerInterface $em, ClassMetadata $class): EntityRepository;
 
 }
