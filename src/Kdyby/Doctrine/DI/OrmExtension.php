@@ -249,10 +249,10 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
             foreach ($this->consoleCommands as $name => $command) {
                 $cli = $builder->addDefinition($this->prefix(str_replace([':', '-', '_'], ['', '', ''], $name)))
-                    ->addTag(ConsoleExtension::COMMAND_TAG, $name)
+                    ->addTag('console.command', $name)
                     ->setAutowired(false)
                     ->addTag(Nette\DI\Extensions\InjectExtension::TAG_INJECT, FALSE); // lazy injects
-
+                
                 if (is_string($command)) {
                     $cli->setClass($command);
                 } else {
