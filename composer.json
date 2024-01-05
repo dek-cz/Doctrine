@@ -15,10 +15,6 @@
         {
             "type": "vcs",
             "url": "https://github.com/dek-cz/dbal"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/dek-cz/console"
         }
     ],
     "require": {
@@ -34,7 +30,7 @@
         "nette/di": "^3.1",
         "nette/utils": "^3.1|^4.0",
         "nette/finder": "^2.5",
-        "contributte/console": "dev-master",
+        "contributte/console": "^0.10.1",
         "nette/php-generator": "^3.6",
         "symfony/console": "^6.0"
     },
