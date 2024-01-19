@@ -27,8 +27,11 @@ use Nette\Utils\Validators;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Kdyby\Annotations\DI\AnnotationsExtension;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
-use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
+//use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
+use Doctrine\DBAL\Tools\Console\ConnectionProvider;
+use Doctrine\DBAL\Tools\Console\ConnectionProvider\SingleConnectionProvider;
 use Kdyby\Doctrine\Console\ContainerHelper;
+use Kdyby\Doctrine\Console\ConnectionHelper;
 use Contributte\Console\DI\ConsoleExtension;
 
 /**
@@ -441,12 +444,15 @@ class OrmExtension extends Nette\DI\CompilerExtension
         }
 
         if ($isDefault) {
+            $builder->addDefinition($this->prefix('helper.connectionProvider'))
+                ->setFactory(SingleConnectionProvider::class, [$connectionService]);
+            
             $builder->addDefinition($this->prefix('helper.entityManager'))
                 ->setFactory(EntityManagerHelper::class, ['@' . $managerServiceId])
                 ->addTag('console.helpers', 'em');
 
             $builder->addDefinition($this->prefix('helper.connection'))
-                ->setFactory(ConnectionHelper::class, [$connectionService])
+                ->setFactory(ConnectionHelper::class, [$extension->prefix('helper.connectionProvider')])
                 ->addTag('console.helpers', 'db');
 
             $builder->addAlias($this->prefix('schemaValidator'), $this->prefix($name . '.schemaValidator'));
@@ -528,7 +534,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
             ->setClass(Doctrine\DBAL\Configuration::class)
             ->addSetup('setResultCacheImpl', [$this->processCache($config['resultCache'], $name . '.dbalResult')])
             ->addSetup('setSQLLogger', [new Statement(Doctrine\DBAL\Logging\LoggerChain::class)])
-            ->addSetup('setFilterSchemaAssetsExpression', [$config['schemaFilter']])
+            ->addSetup('setSchemaAssetsFilter', [$config['schemaFilter']])
             ->setAutowired(FALSE);
 
         // types

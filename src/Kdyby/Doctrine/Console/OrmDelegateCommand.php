@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of the Kdyby (http://www.kdyby.org)
  *
@@ -10,11 +9,12 @@
 
 namespace Kdyby\Doctrine\Console;
 
+use Closure;
+use Kdyby\Doctrine\Tools\CacheCleaner;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Kdyby\Doctrine\Tools\CacheCleaner;
 
 /**
  * Command Delegate.
@@ -78,9 +78,13 @@ abstract class OrmDelegateCommand extends Command
     /**
      * {@inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        return $this->wrapCommand($input->getOption('em'))->execute($input, $output);
+        $wrappingCommand = $this->wrapCommand($input->getOption('em'));
+        $res = Closure::bind(
+                fn($class) => $class->execute($input, $output), null, get_class($wrappingCommand)
+            )($wrappingCommand);
+        return $res;
     }
 
     /**
@@ -88,7 +92,10 @@ abstract class OrmDelegateCommand extends Command
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $this->wrapCommand($input->getOption('em'))->interact($input, $output);
+        $wrappingCommand = $this->wrapCommand($input->getOption('em'));
+        Closure::bind(
+            fn($class) => $class->interact($input, $output), null, get_class($wrappingCommand)
+        )($wrappingCommand);
     }
 
     /**
@@ -96,7 +103,10 @@ abstract class OrmDelegateCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        $this->wrapCommand($input->getOption('em'))->initialize($input, $output);
+        $wrappingCommand = $this->wrapCommand($input->getOption('em'));
+        Closure::bind(
+            fn($class) => $class->initialize($input, $output), null, get_class($wrappingCommand)
+        )($wrappingCommand);
     }
 
 }
