@@ -10,6 +10,7 @@
 
 namespace Kdyby\Doctrine;
 
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Statement;
 use Kdyby;
 use Nette;
@@ -25,7 +26,7 @@ class PDOStatement extends Statement
 	/**
 	 * {@inheritdoc}
 	 */
-	public function execute($params = NULL)
+	public function execute($params = NULL): Result
 	{
 		try {
 			return parent::execute($params);
