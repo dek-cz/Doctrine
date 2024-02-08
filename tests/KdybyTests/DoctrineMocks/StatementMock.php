@@ -10,6 +10,7 @@
 namespace KdybyTests\DoctrineMocks;
 
 use Doctrine;
+use Doctrine\DBAL\Driver\Result;
 
 /**
  * This class is a mock of the Statement interface.
@@ -39,9 +40,9 @@ class StatementMock implements \IteratorAggregate, Doctrine\DBAL\Driver\Statemen
         
     }
 
-    public function execute($params = NULL)
+    public function execute($params = NULL): Result
     {
-        
+        return new DriverResultMock;
     }
 
     public function rowCount()

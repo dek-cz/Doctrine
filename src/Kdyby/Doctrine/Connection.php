@@ -13,6 +13,7 @@ use Doctrine;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\DriverManager;
 use Kdyby;
 use Nette;
 use PDO;
@@ -216,7 +217,8 @@ class Connection extends Doctrine\DBAL\Connection
 
         try {
             //$stmt = $this->getNativeConnection()->prepare($statement);
-            $stmtDriver = parent::prepare($sql);
+//            $stmtDriver = parent::prepare($sql);
+            $stmtDriver = DriverManager::getConnection()->prepare($statement);
             $stmt = new PDOStatement($this, $stmtDriver, $statement);
         } catch (\Exception $ex) {
             throw $this->resolveException(Doctrine\DBAL\DBALException::driverExceptionDuringQuery($this->getDriver(), $ex, $statement), $statement);
