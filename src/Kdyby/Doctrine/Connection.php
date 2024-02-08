@@ -147,6 +147,22 @@ class Connection extends Doctrine\DBAL\Connection
     }
 
     /**
+     * @param mixed $query
+     * @param array $params
+     * @param array $types
+     * @return int|string
+     * @throws DBALException
+     */
+    public function executeStatement($query, array $params = [], array $types = [])
+    {
+        try {
+            return parent::executeStatement($query, $params, $types);
+        } catch (\Exception $e) {
+            throw $this->resolveException($e, $query, $params);
+        }
+    }
+
+    /**
      * @param string $query
      * @param array $params
      * @param array $types
@@ -155,11 +171,7 @@ class Connection extends Doctrine\DBAL\Connection
      */
     public function executeUpdate(string $query, array $params = [], array $types = []): int
     {
-        try {
-            return parent::executeUpdate($query, $params, $types);
-        } catch (\Exception $e) {
-            throw $this->resolveException($e, $query, $params);
-        }
+        return (int) $this->executeStatement($query, $params, $types);
     }
 
     /**
@@ -286,7 +298,7 @@ class Connection extends Doctrine\DBAL\Connection
 
     public function ping()
     {
-        $conn = $this->getWrappedConnection();
+        $conn = $this->getNativeConnection();
         if ($conn instanceof Driver\PingableConnection) {
             return $conn->ping();
         }
@@ -340,23 +352,22 @@ class Connection extends Doctrine\DBAL\Connection
             return $e;
         }
 
-        if ($e instanceof Doctrine\DBAL\DBALException && ($pe = $e->getPrevious()) instanceof \PDOException) {
+        if ($e instanceof Doctrine\DBAL\Exception && ($pe = $e->getPrevious()) instanceof \PDOException) {
             $info = $pe->errorInfo;
         } elseif ($e instanceof \PDOException) {
             $info = $e->errorInfo;
         } else {
             return new DBALException($e, $query, $params, $this);
         }
-
-        if ($this->getDriver() instanceof Doctrine\DBAL\Driver\PDOMySql\Driver) {
-            if ($info[0] == 23000 && $info[1] == self::MYSQL_ERR_UNIQUE) { // unique fail
+        if ($this->getDriver() instanceof Doctrine\DBAL\Driver\PDO\MySQL\Driver) {
+                var_dump('xxx');exit;
+            if ((int) $info[0] === 23000 && (int) $info[1] === (int) self::MYSQL_ERR_UNIQUE) { // unique fail
                 $columns = [];
-
                 try {
                     if (preg_match('~Duplicate entry .*? for key \'([^\']+)\'~', $info[2], $m)) {
                         $table = self::resolveExceptionTable($e);
                         if ($table !== NULL) {
-                            $indexes = $this->getSchemaManager()->listTableIndexes($table);
+                            $indexes = $this->createSchemaManager()->listTableIndexes($table);
                             if (array_key_exists($m[1], $indexes)) {
                                 $columns[$m[1]] = $indexes[$m[1]]->getColumns();
                             }
@@ -367,7 +378,7 @@ class Connection extends Doctrine\DBAL\Connection
                 }
 
                 return new DuplicateEntryException($e, $columns, $query, $params, $this);
-            } elseif ($info[0] == 23000 && $info[1] == self::MYSQL_ERR_NOT_NULL) { // notnull fail
+            } elseif ((int) $info[0] === 23000 && (int) $info[1] === (int) self::MYSQL_ERR_NOT_NULL) { // notnull fail
                 $column = NULL;
                 if (preg_match('~Column \'([^\']+)\'~', $info[2], $m)) {
                     $column = $m[1];

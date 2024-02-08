@@ -10,7 +10,7 @@ use Doctrine;
 class MysqlDriverMock extends Doctrine\DBAL\Driver\PDO\MySQL\Driver
 {
 
-    public function getSchemaManager(Doctrine\DBAL\Connection $conn)
+    public function createSchemaManager(Doctrine\DBAL\Connection $conn)
     {
         return new SchemaManagerMock($conn);
     }

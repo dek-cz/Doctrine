@@ -68,7 +68,7 @@ class ConnectionMock extends Kdyby\Doctrine\Connection
 	/**
 	 * @override
 	 */
-	public function executeUpdate($query, array $params = [], array $types = [])
+	public function executeUpdate(string $query, array $params = [], array $types = []): int
 	{
 		$this->_executeUpdates[] = ['query' => $query, 'params' => $params, 'types' => $types];
 	}

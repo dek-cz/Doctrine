@@ -206,9 +206,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
         }
 
         if ($this->targetEntityMappings) {
-            if (!$this->isKdybyEventsPresent()) {
-                throw new Nette\Utils\AssertionException('The option \'targetEntityMappings\' requires \'Kdyby\Events\DI\EventsExtension\'.', E_USER_NOTICE);
-            }
+//            if (!$this->isKdybyEventsPresent()) {
+//                throw new Nette\Utils\AssertionException('The option \'targetEntityMappings\' requires \'Kdyby\Events\DI\EventsExtension\'.', E_USER_NOTICE);
+//            }
 
             $listener = $builder->addDefinition($this->prefix('resolveTargetEntityListener'))
                 ->setClass(Kdyby\Doctrine\Tools\ResolveTargetEntityListener::class)
@@ -435,7 +435,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         $builder->addDefinition($this->prefix($name . '.schemaManager'))
             ->setClass(AbstractSchemaManager::class)
-            ->setFactory('@' . Kdyby\Doctrine\Connection::class . '::getSchemaManager')
+            ->setFactory('@' . Kdyby\Doctrine\Connection::class . '::createSchemaManager')
             ->setAutowired($isDefault);
 
         foreach ($this->compiler->getExtensions(AnnotationsExtension::class) as $extension) {
@@ -840,13 +840,13 @@ class OrmExtension extends Nette\DI\CompilerExtension
         return interface_exists(\Tracy\IBarPanel::class);
     }
 
-    /**
-     * @return bool
-     */
-    private function isKdybyEventsPresent()
-    {
-        return (bool) $this->compiler->getExtensions(\Kdyby\Events\DI\EventsExtension::class);
-    }
+//    /**
+//     * @return bool
+//     */
+//    private function isKdybyEventsPresent()
+//    {
+//        return (bool) $this->compiler->getExtensions(\Kdyby\Events\DI\EventsExtension::class);
+//    }
 
     private function addCollapsePathsToTracy(Method $init)
     {

@@ -11,6 +11,7 @@ namespace KdybyTests\Doctrine;
 
 use Doctrine;
 use Doctrine\DBAL\Driver\PDO\PDOException;
+use Doctrine\DBAL\Query;
 use Kdyby;
 use KdybyTests\DoctrineMocks\ConnectionMock;
 use Nette;
@@ -41,10 +42,10 @@ class ConnectionTest extends Tester\TestCase
 
     public function testPing()
     {
-        $conn = Kdyby\Doctrine\Connection::create($this->loadMysqlConfig(), new Doctrine\DBAL\Configuration(), new Kdyby\Events\EventManager());
+        $conn = Kdyby\Doctrine\Connection::create($this->loadMysqlConfig(), new Doctrine\DBAL\Configuration(), new Doctrine\Common\EventManager());
 
         /** @var \PDO $pdo */
-        $pdo = $conn->getWrappedConnection();
+        $pdo = $conn->getNativeConnection();
         $pdo->setAttribute(\PDO::ATTR_TIMEOUT, 3);
         $conn->query("SET interactive_timeout = 3");
         $conn->query("SET wait_timeout = 3");
@@ -68,7 +69,7 @@ class ConnectionTest extends Tester\TestCase
     public function testDriverExceptions_MySQL($exception, $class, array $props)
     {
         $conn = new ConnectionMock([], new MysqlDriverMock());
-        $conn->setDatabasePlatform(new Doctrine\DBAL\Platforms\MySqlPlatform());
+        $conn->setDatabasePlatform(new Doctrine\DBAL\Platforms\MySQLPlatform());
         $conn->throwOldKdybyExceptions = TRUE;
 
         $resolved = $conn->resolveException($exception);
@@ -85,21 +86,22 @@ class ConnectionTest extends Tester\TestCase
     {
         $e = new \PDOException('SQLSTATE[23000]: Integrity constraint violation: 1048 Column \'name\' cannot be null', '23000');
         $e->errorInfo = ['23000', 1048, 'Column \'name\' cannot be null'];
-        $emptyPdo = new PDOException($e);
+        $emptyPdo = PDOException::new($e);
 
-        $driver = new MysqlDriverMock();
-
-        $empty = Doctrine\DBAL\DBALException::driverExceptionDuringQuery(
-                $driver, $emptyPdo, "INSERT INTO `test_empty` (`name`) VALUES (NULL)", []
-        );
+//        $driver = new MysqlDriverMock();
+        $empty = new Doctrine\DBAL\Exception\DriverException($emptyPdo, new Query("INSERT INTO `test_empty` (`name`) VALUES (NULL)", [], []));
+//        $empty = Doctrine\DBAL\Exception\DriverException::driverExceptionDuringQuery(
+//                $driver, $emptyPdo, "INSERT INTO `test_empty` (`name`) VALUES (NULL)", []
+//        );
 
         $e = new \PDOException('SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry \'filip-prochazka\' for key \'uniq_name_surname\'', '23000');
         $e->errorInfo = ['23000', 1062, 'Duplicate entry \'filip-prochazka\' for key \'uniq_name_surname\''];
-        $uniquePdo = new PDOException($e);
+        $uniquePdo = PDOException::new($e);
 
-        $unique = Doctrine\DBAL\DBALException::driverExceptionDuringQuery(
-                $driver, $uniquePdo, "INSERT INTO `test_empty` (`name`, `surname`) VALUES ('filip', 'prochazka')", []
-        );
+        $unique = new Doctrine\DBAL\Exception\DriverException($uniquePdo, new Query("INSERT INTO `test_empty` (`name`, `surname`) VALUES ('filip', 'prochazka')", [], []));
+//        $unique = Doctrine\DBAL\DBALException::driverExceptionDuringQuery(
+//                $driver, $uniquePdo, "INSERT INTO `test_empty` (`name`, `surname`) VALUES ('filip', 'prochazka')", []
+//        );
 
         return [
             [$empty, \Kdyby\Doctrine\EmptyValueException::class, ['column' => 'name']],
@@ -111,7 +113,7 @@ class ConnectionTest extends Tester\TestCase
     {
         $conn = new Kdyby\Doctrine\Connection([
             'memory' => TRUE,
-            ], new Doctrine\DBAL\Driver\PDOSqlite\Driver());
+            ], new Doctrine\DBAL\Driver\PDO\SQLite\Driver());
         $conn->setSchemaTypes([
             'test' => 'test',
         ]);
