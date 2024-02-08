@@ -14,6 +14,7 @@ use Doctrine;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
+use DekApps\Evm\DI\EvmExtension;
 use Kdyby;
 use Kdyby\DoctrineCache\DI\Helpers as CacheHelpers;
 use Nette;
@@ -206,13 +207,13 @@ class OrmExtension extends Nette\DI\CompilerExtension
         }
 
         if ($this->targetEntityMappings) {
-//            if (!$this->isKdybyEventsPresent()) {
-//                throw new Nette\Utils\AssertionException('The option \'targetEntityMappings\' requires \'Kdyby\Events\DI\EventsExtension\'.', E_USER_NOTICE);
-//            }
+            if (!$this->isKdybyEventsPresent()) {
+                throw new Nette\Utils\AssertionException('The option \'targetEntityMappings\' requires \'DekApps\Evm\DI\EvmExtension\'.', E_USER_NOTICE);
+            }
 
             $listener = $builder->addDefinition($this->prefix('resolveTargetEntityListener'))
                 ->setClass(Kdyby\Doctrine\Tools\ResolveTargetEntityListener::class)
-                ->addTag(Kdyby\Events\DI\EventsExtension::TAG_SUBSCRIBER);
+                ->addTag(EvmExtension::TAG_SUBSCRIBER);
 
             foreach ($this->targetEntityMappings as $originalEntity => $mapping) {
                 $listener->addSetup('addResolveTargetEntity', [$originalEntity, $mapping['targetEntity'], $mapping]);
@@ -387,8 +388,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         if ($this->isKdybyEventsPresent()) {
             $builder->addDefinition($this->prefix($name . '.evm'))
-                ->setFactory(Kdyby\Events\NamespacedEventManager::class, [Kdyby\Doctrine\Events::NS . '::'])
-                ->addSetup('$dispatchGlobalEvents', [TRUE]) // for BC
+                ->setClass('DekApps\Evm\Evm')
                 ->setAutowired(FALSE);
         } else {
             $builder->addDefinition($this->prefix($name . '.evm'))
@@ -840,13 +840,13 @@ class OrmExtension extends Nette\DI\CompilerExtension
         return interface_exists(\Tracy\IBarPanel::class);
     }
 
-//    /**
-//     * @return bool
-//     */
-//    private function isKdybyEventsPresent()
-//    {
-//        return (bool) $this->compiler->getExtensions(\Kdyby\Events\DI\EventsExtension::class);
-//    }
+    /**
+     * @return bool
+     */
+    private function isKdybyEventsPresent()
+    {
+        return (bool) $this->compiler->getExtensions(EvmExtension::class);
+    }
 
     private function addCollapsePathsToTracy(Method $init)
     {

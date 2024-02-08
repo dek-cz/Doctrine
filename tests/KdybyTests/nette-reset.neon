@@ -6,6 +6,7 @@ extensions:
 	console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
 	kdyby.annotations: Kdyby\Annotations\DI\AnnotationsExtension
 	kdyby.doctrine: Kdyby\Doctrine\DI\OrmExtension
+	evm: DekApps\Evm\DI\EvmExtension
 
 
 kdyby.doctrine:

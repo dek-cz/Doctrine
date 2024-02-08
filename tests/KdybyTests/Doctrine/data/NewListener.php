@@ -2,21 +2,22 @@
 
 namespace KdybyTests\Doctrine;
 
-use Kdyby;
+use Doctrine;
+use Doctrine\ORM\Events;
 
-class NewListener implements Kdyby\Events\Subscriber
+class NewListener implements Doctrine\Common\EventSubscriber
 {
 
-	public $calls = [];
+    public $calls = [];
 
-	public function getSubscribedEvents()
-	{
-		return [Kdyby\Doctrine\Events::onFlush];
-	}
+    public function getSubscribedEvents()
+    {
+        return [Events::onFlush];
+    }
 
-	public function onFlush()
-	{
-		$this->calls[] = func_get_args();
-	}
+    public function onFlush()
+    {
+        $this->calls[] = func_get_args();
+    }
 
 }

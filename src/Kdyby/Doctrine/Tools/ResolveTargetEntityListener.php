@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of the Kdyby (http://www.kdyby.org)
  *
@@ -11,28 +10,25 @@
 namespace Kdyby\Doctrine\Tools;
 
 use Doctrine;
-use Kdyby;
-use Kdyby\Doctrine\Events;
-
-
+use Doctrine\ORM\Events;
 
 /**
  * @author Michal Gebauer <mishak@mishak.net>
  */
-class ResolveTargetEntityListener extends Doctrine\ORM\Tools\ResolveTargetEntityListener implements Kdyby\Events\Subscriber
+class ResolveTargetEntityListener extends Doctrine\ORM\Tools\ResolveTargetEntityListener
 {
 
-	/**
-	 * Returns an array of events this subscriber wants to listen to.
-	 *
-	 * @return array
-	 */
-	public function getSubscribedEvents()
-	{
-		return [
-			Events::loadClassMetadata,
-			Events::onClassMetadataNotFound,
-		];
-	}
+    /**
+     * Returns an array of events this subscriber wants to listen to.
+     *
+     * @return array
+     */
+    public function getSubscribedEvents()
+    {
+        return [
+            Events::loadClassMetadata,
+            Events::onClassMetadataNotFound,
+        ];
+    }
 
 }
