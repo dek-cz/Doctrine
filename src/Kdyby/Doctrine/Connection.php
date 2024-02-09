@@ -208,24 +208,12 @@ class Connection extends Doctrine\DBAL\Connection
      *
      * @param string $statement The SQL statement to prepare.
      * @throws DBALException
-     * @return PDOStatement The prepared statement.
+     * @return Doctrine\DBAL\Statement The prepared statement.
      */
     public function prepare(string $sql): Doctrine\DBAL\Statement
     {
-        $statement = $sql;
         $this->connect();
-
-        try {
-            //$stmt = $this->getNativeConnection()->prepare($statement);
-//            $stmtDriver = parent::prepare($sql);
-            $stmtDriver = DriverManager::getConnection()->prepare($statement);
-            $stmt = new PDOStatement($this, $stmtDriver, $statement);
-        } catch (\Exception $ex) {
-            throw $this->resolveException(Doctrine\DBAL\DBALException::driverExceptionDuringQuery($this->getDriver(), $ex, $statement), $statement);
-        }
-
-//        $stmt->setFetchMode(PDO::FETCH_ASSOC);
-
+        $stmt = parent::prepare($sql);
         return $stmt;
     }
 
@@ -362,7 +350,8 @@ class Connection extends Doctrine\DBAL\Connection
             return new DBALException($e, $query, $params, $this);
         }
         if ($this->getDriver() instanceof Doctrine\DBAL\Driver\PDO\MySQL\Driver) {
-                var_dump('xxx');exit;
+            var_dump('xxx');
+            exit;
             if ((int) $info[0] === 23000 && (int) $info[1] === (int) self::MYSQL_ERR_UNIQUE) { // unique fail
                 $columns = [];
                 try {
