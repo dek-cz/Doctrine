@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of the Kdyby (http://www.kdyby.org)
  *
@@ -15,6 +14,7 @@ use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use DekApps\Evm\DI\EvmExtension;
+use DekApps\Evm\Evm;
 use Kdyby;
 use Kdyby\DoctrineCache\DI\Helpers as CacheHelpers;
 use Nette;
@@ -42,12 +42,19 @@ class OrmExtension extends Nette\DI\CompilerExtension
 {
 
     const ANNOTATION_DRIVER = 'annotations';
+
     const PHP_NAMESPACE = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*';
+
     const TAG_CONNECTION = 'doctrine.connection';
+
     const TAG_ENTITY_MANAGER = 'doctrine.entityManager';
+
     const TAG_BIND_TO_MANAGER = 'doctrine.bindToManager';
+
     const TAG_REPOSITORY_ENTITY = 'doctrine.repositoryEntity';
+
     const DEFAULT_PROXY_NAMESPACE = 'Kdyby\GeneratedProxy';
+
     const KDYBY_METADATA_NAMESPACE = 'Kdyby\Doctrine';
 
     /**
@@ -256,7 +263,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
                     ->addTag('console.command', $name)
                     ->setAutowired(false)
                     ->addTag(Nette\DI\Extensions\InjectExtension::TAG_INJECT, FALSE); // lazy injects
-                
+
                 if (is_string($command)) {
                     $cli->setClass($command);
                 } else {
@@ -379,17 +386,21 @@ class OrmExtension extends Nette\DI\CompilerExtension
         }
 
         if ($config['targetEntityMappings']) {
-            $configuration->addSetup('setTargetEntityMap', [array_map(function ($mapping)
-                {
+            $configuration->addSetup('setTargetEntityMap', [array_map(function ($mapping) {
                     return $mapping['targetEntity'];
                 }, $config['targetEntityMappings'])]);
             $this->targetEntityMappings = Nette\Utils\Arrays::mergeTree($this->targetEntityMappings, $config['targetEntityMappings']);
         }
 
         if ($this->isKdybyEventsPresent()) {
-            $builder->addDefinition($this->prefix($name . '.evm'))
-                ->setClass('DekApps\Evm\Evm')
-                ->setAutowired(FALSE);
+            $evmDef = $builder->hasDefinition(EvmExtension::EVM_ALIAS);
+            if ($evmDef) {
+                $builder->addAlias($this->prefix($name . '.evm'), $evmDef->getName());
+            } else {
+                $builder->addDefinition($this->prefix($name . '.evm'))
+                    ->setClass('DekApps\Evm\Evm');
+                $builder->addAlias(EvmExtension::EVM_ALIAS, $this->prefix($name . '.evm'));
+            }
         } else {
             $builder->addDefinition($this->prefix($name . '.evm'))
                 ->setClass('Doctrine\Common\EventManager')
@@ -446,7 +457,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
         if ($isDefault) {
             $builder->addDefinition($this->prefix('helper.connectionProvider'))
                 ->setFactory(SingleConnectionProvider::class, [$connectionService]);
-            
+
             $builder->addDefinition($this->prefix('helper.entityManager'))
                 ->setFactory(EntityManagerHelper::class, ['@' . $managerServiceId])
                 ->addTag('console.helpers', 'em');
@@ -865,8 +876,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
      */
     public static function register(Nette\Configurator $configurator)
     {
-        $configurator->onCompile[] = function ($config, Nette\DI\Compiler $compiler)
-        {
+        $configurator->onCompile[] = function ($config, Nette\DI\Compiler $compiler) {
             $compiler->addExtension('doctrine', new OrmExtension());
         };
     }
