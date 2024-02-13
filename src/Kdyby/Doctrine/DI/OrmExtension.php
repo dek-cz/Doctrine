@@ -719,7 +719,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
             $factoryServiceName = $this->prefix('repositoryFactory.' . $originalServiceName);
             $factoryDef = $builder->addFactoryDefinition($factoryServiceName)
                 ->setImplement(IRepositoryFactory::class)
-                ->setParameters([Doctrine\ORM\EntityManagerInterface::class . ' entityManager', Doctrine\ORM\Mapping\ClassMetadata::class . ' classMetadata'])
+//                ->setParameters([Doctrine\ORM\EntityManagerInterface::class . ' entityManager', Doctrine\ORM\Mapping\ClassMetadata::class . ' classMetadata'])
                 ->setAutowired(FALSE)
                 ->getResultDefinition()
                 ->setFactory($originalDef->getFactory());

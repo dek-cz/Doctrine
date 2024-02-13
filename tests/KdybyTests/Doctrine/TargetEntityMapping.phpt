@@ -13,7 +13,8 @@ use Doctrine\Common\Cache\FilesystemCache;
 use Doctrine\Common\Cache\VoidCache;
 use Doctrine\Common\Cache\Psr6\CacheAdapter;
 use Kdyby;
-use Kdyby\Doctrine\Events;
+use DekApps\Evm\Evm;
+use Doctrine\ORM\Events;
 use KdybyTests;
 use Tester;
 use Tester\Assert;
@@ -42,8 +43,8 @@ class TargetEntityMapping extends ORMTestCase
         $em->getMetadataFactory()->setCache($psr6Cache);
 
         $metadataEventSubscriber = new MetadataEventSubscriberMock();
-        /** @var \Kdyby\Events\EventManager $evm */
-        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        /** @var \DekApps\Evm\Evm $evm */
+        $evm = $this->serviceLocator->getByType(Evm::class);
         $evm->addEventSubscriber($metadataEventSubscriber);
 
         $meta = $em->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
@@ -59,8 +60,8 @@ class TargetEntityMapping extends ORMTestCase
         $em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
 
         $metadataEventSubscriber2 = new MetadataEventSubscriberMock();
-        /** @var \Kdyby\Events\EventManager $evm */
-        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        /** @var \DekApps\Evm\Evm $evm */
+        $evm = $this->serviceLocator->getByType(Evm::class);
         $evm->addEventSubscriber($metadataEventSubscriber2);
 
         $meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\ICmsAddress::class);
@@ -79,8 +80,8 @@ class TargetEntityMapping extends ORMTestCase
         $em = $this->createMemoryManagerWithFilesytemMetadataCache();
 
         $metadataEventSubscriber = new MetadataEventSubscriberMock();
-        /** @var \Kdyby\Events\EventManager $evm */
-        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        /** @var \DekApps\Evm\Evm $evm */
+        $evm = $this->serviceLocator->getByType(Evm::class);
         $evm->addEventSubscriber($metadataEventSubscriber);
 
         $meta = $em->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
@@ -96,8 +97,8 @@ class TargetEntityMapping extends ORMTestCase
         $em2 = $this->createMemoryManagerWithFilesytemMetadataCache();
 
         $metadataEventSubscriber2 = new MetadataEventSubscriberMock();
-        /** @var \Kdyby\Events\EventManager $evm */
-        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        /** @var \DekApps\Evm\Evm $evm */
+        $evm = $this->serviceLocator->getByType(Evm::class);
         $evm->addEventSubscriber($metadataEventSubscriber2);
 
         $meta2 = $em2->getClassMetadata(\KdybyTests\Doctrine\CmsAddress::class);
@@ -115,8 +116,8 @@ class TargetEntityMapping extends ORMTestCase
     {
         $em = $this->createMemoryManagerWithFilesytemMetadataCache();
 
-        /** @var \Kdyby\Events\EventManager $evm */
-        $evm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
+        /** @var \DekApps\Evm\Evm $evm */
+        $evm = $this->serviceLocator->getByType(Evm::class);
         $loadClassMetadata = $evm->getListeners(Events::loadClassMetadata);
         $onClassMetadataNotFound = $evm->getListeners(Events::onClassMetadataNotFound);
 

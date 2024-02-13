@@ -162,7 +162,7 @@ class NonLockingUniqueInserter
             . ' (' . implode(', ', $columns) . ')'
             . ' VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')';
 
-        $driverStatement = $this->db->getNativeConnection()->prepare($insertSql);
+        $driverStatement = $this->db->connect()->prepare($insertSql);
         // create statement
         $statement = new Statement($this->db, $driverStatement, $insertSql);
 
