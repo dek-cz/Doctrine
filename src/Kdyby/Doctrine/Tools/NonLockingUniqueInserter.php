@@ -161,10 +161,8 @@ class NonLockingUniqueInserter
         $insertSql = 'INSERT INTO ' . $this->quotes->getTableName($meta, $this->platform)
             . ' (' . implode(', ', $columns) . ')'
             . ' VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')';
-
-        $driverStatement = $this->db->connect()->prepare($insertSql);
-        // create statement
-        $statement = new Statement($this->db, $driverStatement, $insertSql);
+        
+        $statement = $this->db->prepare($insertSql);
 
         // bind values
         $paramIndex = 1;

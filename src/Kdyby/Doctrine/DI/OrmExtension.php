@@ -395,7 +395,8 @@ class OrmExtension extends Nette\DI\CompilerExtension
         if ($this->isKdybyEventsPresent()) {
             $evmDef = $builder->hasDefinition(EvmExtension::EVM_ALIAS);
             if ($evmDef) {
-                $builder->addAlias($this->prefix($name . '.evm'), $evmDef->getName());
+                $builder->addAlias($this->prefix($name . '.evm'), $builder->getDefinition(EvmExtension::EVM_ALIAS)->getName());
+                var_dump($this->prefix($name . '.evm'));
             } else {
                 $builder->addDefinition($this->prefix($name . '.evm'))
                     ->setClass('DekApps\Evm\Evm');
@@ -406,7 +407,6 @@ class OrmExtension extends Nette\DI\CompilerExtension
                 ->setClass('Doctrine\Common\EventManager')
                 ->setAutowired(FALSE);
         }
-
         // entity manager
         $entityManager = $builder->addDefinition($managerServiceId = $this->prefix($name . '.entityManager'))
             ->setClass(Kdyby\Doctrine\EntityManager::class)

@@ -350,8 +350,6 @@ class Connection extends Doctrine\DBAL\Connection
             return new DBALException($e, $query, $params, $this);
         }
         if ($this->getDriver() instanceof Doctrine\DBAL\Driver\PDO\MySQL\Driver) {
-            var_dump('xxx');
-            exit;
             if ((int) $info[0] === 23000 && (int) $info[1] === (int) self::MYSQL_ERR_UNIQUE) { // unique fail
                 $columns = [];
                 try {
