@@ -396,7 +396,6 @@ class OrmExtension extends Nette\DI\CompilerExtension
             $evmDef = $builder->hasDefinition(EvmExtension::EVM_ALIAS);
             if ($evmDef) {
                 $builder->addAlias($this->prefix($name . '.evm'), $builder->getDefinition(EvmExtension::EVM_ALIAS)->getName());
-                var_dump($this->prefix($name . '.evm'));
             } else {
                 $builder->addDefinition($this->prefix($name . '.evm'))
                     ->setClass('DekApps\Evm\Evm');

@@ -357,7 +357,6 @@ class Connection extends Doctrine\DBAL\Connection
                         $table = self::resolveExceptionTable($e);
                         if ($table !== NULL) {
                             $indexes = $this->createSchemaManager()->listTableIndexes($table);
-                        var_dump($indexes);
                             if (array_key_exists($m[1], $indexes)) {
                                 $columns[$m[1]] = $indexes[$m[1]]->getColumns();
                             }
