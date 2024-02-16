@@ -10,10 +10,14 @@
 namespace KdybyTests\Doctrine;
 
 use Doctrine;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Driver\PDO\MySQL\Driver;
 use Doctrine\DBAL\Driver\PDO\PDOException;
 use Doctrine\DBAL\Query;
 use Kdyby;
+use KdybyTests\Doctrine\TestCase;
 use KdybyTests\DoctrineMocks\ConnectionMock;
+use KdybyTests\Doctrine\MysqlSchemaManagerFactoryMock;
 use Nette;
 use Tester;
 use Tester\Assert;
@@ -23,7 +27,7 @@ require_once __DIR__ . '/../bootstrap.php';
 /**
  * @author Filip Procházka <filip@prochazka.su>
  */
-class ConnectionTest extends Tester\TestCase
+class ConnectionTest extends TestCase
 {
 
     /**
@@ -68,7 +72,11 @@ class ConnectionTest extends Tester\TestCase
      */
     public function testDriverExceptions_MySQL($exception, $class, array $props)
     {
-        $conn = new ConnectionMock([], new MysqlDriverMock());
+        $drv = new Driver();
+        $schemaManagerFactory = new MysqlSchemaManagerFactoryMock();
+        $config = new Configuration();
+        $config->setSchemaManagerFactory($schemaManagerFactory);
+        $conn = new ConnectionMock([], $drv, $config);
         $conn->setDatabasePlatform(new Doctrine\DBAL\Platforms\MySQLPlatform());
         $conn->throwOldKdybyExceptions = TRUE;
 
@@ -99,6 +107,7 @@ class ConnectionTest extends Tester\TestCase
         $uniquePdo = PDOException::new($e);
 
         $unique = new Doctrine\DBAL\Exception\DriverException($uniquePdo, new Query("INSERT INTO `test_empty` (`name`, `surname`) VALUES ('filip', 'prochazka')", [], []));
+        $unique->getSQLState();
 //        $unique = Doctrine\DBAL\DBALException::driverExceptionDuringQuery(
 //                $driver, $uniquePdo, "INSERT INTO `test_empty` (`name`, `surname`) VALUES ('filip', 'prochazka')", []
 //        );

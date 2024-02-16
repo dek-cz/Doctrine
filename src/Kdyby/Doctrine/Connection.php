@@ -342,7 +342,7 @@ class Connection extends Doctrine\DBAL\Connection
             return $e;
         }
 
-        if ($e instanceof Doctrine\DBAL\Exception && ($pe = $e->getPrevious()) instanceof \PDOException) {
+        if ($e instanceof Doctrine\DBAL\Exception\DriverException && ($pe = $e->getPrevious()) instanceof \PDOException) {
             $info = $pe->errorInfo;
         } elseif ($e instanceof \PDOException) {
             $info = $e->errorInfo;
@@ -357,6 +357,7 @@ class Connection extends Doctrine\DBAL\Connection
                         $table = self::resolveExceptionTable($e);
                         if ($table !== NULL) {
                             $indexes = $this->createSchemaManager()->listTableIndexes($table);
+                        var_dump($indexes);
                             if (array_key_exists($m[1], $indexes)) {
                                 $columns[$m[1]] = $indexes[$m[1]]->getColumns();
                             }
@@ -391,16 +392,16 @@ class Connection extends Doctrine\DBAL\Connection
      */
     private static function resolveExceptionTable($e)
     {
-        if (!$e instanceof Doctrine\DBAL\DBALException) {
+        if (!$e instanceof Doctrine\DBAL\Exception\DriverException) {
             return NULL;
         }
-
-        if ($caused = Tracy\Helpers::findTrace($e->getTrace(), Doctrine\DBAL\DBALException::class . '::driverExceptionDuringQuery')) {
-            if (preg_match('~(?:INSERT|UPDATE|REPLACE)(?:[A-Z_\s]*)`?([^\s`]+)`?\s*~', is_string($caused['args'][1]) ? $caused['args'][1] : $caused['args'][2], $m)) {
-                return $m[1];
-            }
+        $query = $e->getQuery();
+        if ($query === NULL) {
+            return NULL;
         }
-
+        if (preg_match('~(?:INSERT|UPDATE|REPLACE)(?:[A-Z_\s]*)`?([^\s`]+)`?\s*~', $query->getSql(), $m)) {
+            return $m[1];
+        }
         return NULL;
     }
 

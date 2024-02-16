@@ -17,6 +17,7 @@ class SchemaManagerMock extends Doctrine\DBAL\Schema\MySQLSchemaManager
      */
     public function listTableIndexes($table)
     {
+        var_dump($table);
         $tables = [
             'test_empty' => ['uniq_name_surname' => new Doctrine\DBAL\Schema\Index('uniq_name_surname', ['name', 'surname'], TRUE)],
         ];
