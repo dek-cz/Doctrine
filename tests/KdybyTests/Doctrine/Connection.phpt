@@ -60,7 +60,7 @@ class ConnectionTest extends TestCase
         Assert::true($conn->ping());
 
         sleep(5);
-        Assert::false($conn->ping());
+        Assert::exception( function()use($conn){try{$conn->ping();} catch (\Exception $e){throw $e;}},\Doctrine\DBAL\Exception\ConnectionLost::class,'An exception occurred while executing a query: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away');
     }
 
     /**

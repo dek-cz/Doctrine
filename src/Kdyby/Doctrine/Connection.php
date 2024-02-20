@@ -196,6 +196,7 @@ class Connection extends Doctrine\DBAL\Connection
     public function query(string $sql): Doctrine\DBAL\Result
     {
         $args = func_get_args();
+        
         try {
             return parent::query($sql);
         } catch (\Exception $e) {
