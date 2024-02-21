@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of the Kdyby (http://www.kdyby.org)
  *
@@ -11,88 +10,81 @@
 namespace KdybyTests\DoctrineMocks;
 
 use Doctrine;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Driver\API\ExceptionConverter;
+use Doctrine\DBAL\Driver\API\MySQL\ExceptionConverter as MySqlExceptionConverter;
 use KdybyTests\Doctrine\SchemaManagerMock;
 
 class DriverMock implements Doctrine\DBAL\Driver
 {
 
-	private $_platformMock;
+    private $_platformMock;
 
-	private $_schemaManagerMock;
+    private $_schemaManagerMock;
 
+    public function connect(array $params, $username = NULL, $password = NULL, array $driverOptions = [])
+    {
+        return new DriverConnectionMock();
+    }
 
+    /**
+     * Constructs the Sqlite PDO DSN.
+     *
+     * @param array $params
+     * @return string
+     */
+    protected function _constructPdoDsn(array $params)
+    {
+        return "";
+    }
 
-	public function connect(array $params, $username = NULL, $password = NULL, array $driverOptions = [])
-	{
-		return new DriverConnectionMock();
-	}
+    /**
+     * @override
+     */
+    public function getDatabasePlatform()
+    {
+        if (!$this->_platformMock) {
+            $this->_platformMock = new DatabasePlatformMock;
+        }
 
+        return $this->_platformMock;
+    }
 
+    /**
+     * @override
+     */
+    public function getSchemaManager(Connection $conn, AbstractPlatform $platform)
+    {
+        if ($this->_schemaManagerMock == NULL) {
+            return new SchemaManagerMock($conn);
+        } else {
+            return $this->_schemaManagerMock;
+        }
+    }
 
-	/**
-	 * Constructs the Sqlite PDO DSN.
-	 *
-	 * @param array $params
-	 * @return string
-	 */
-	protected function _constructPdoDsn(array $params)
-	{
-		return "";
-	}
+    public function setDatabasePlatform(Doctrine\DBAL\Platforms\AbstractPlatform $platform)
+    {
+        $this->_platformMock = $platform;
+    }
 
+    public function setSchemaManager(Doctrine\DBAL\Schema\AbstractSchemaManager $sm)
+    {
+        $this->_schemaManagerMock = $sm;
+    }
 
+    public function getName()
+    {
+        return 'mock';
+    }
 
-	/**
-	 * @override
-	 */
-	public function getDatabasePlatform()
-	{
-		if (!$this->_platformMock) {
-			$this->_platformMock = new DatabasePlatformMock;
-		}
+    public function getDatabase(Doctrine\DBAL\Connection $conn)
+    {
+        return;
+    }
+    public function getExceptionConverter(): ExceptionConverter
+    {
+        return new MySqlExceptionConverter();
+    }
 
-		return $this->_platformMock;
-	}
-
-
-
-	/**
-	 * @override
-	 */
-	public function getSchemaManager(Doctrine\DBAL\Connection $conn)
-	{
-		if ($this->_schemaManagerMock == NULL) {
-			return new SchemaManagerMock($conn);
-		} else {
-			return $this->_schemaManagerMock;
-		}
-	}
-
-
-
-	public function setDatabasePlatform(Doctrine\DBAL\Platforms\AbstractPlatform $platform)
-	{
-		$this->_platformMock = $platform;
-	}
-
-
-
-	public function setSchemaManager(Doctrine\DBAL\Schema\AbstractSchemaManager $sm)
-	{
-		$this->_schemaManagerMock = $sm;
-	}
-
-
-
-	public function getName()
-	{
-		return 'mock';
-	}
-
-
-
-	public function getDatabase(Doctrine\DBAL\Connection $conn)
-	{
-		return;
-	}
 }

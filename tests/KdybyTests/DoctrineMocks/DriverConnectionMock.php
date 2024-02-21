@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of the Kdyby (http://www.kdyby.org)
  *
@@ -11,68 +10,60 @@
 namespace KdybyTests\DoctrineMocks;
 
 use Doctrine;
-
-
+use Doctrine\DBAL\Driver\Result;
+use Doctrine\DBAL\Driver\Statement;
 
 class DriverConnectionMock implements Doctrine\DBAL\Driver\Connection
 {
 
-	public function prepare($prepareString)
-	{
-	}
+    public function prepare(string $sql): Statement
+    {
+        return new StatementMock;
+    }
 
+    public function query(string $sql): Result
+    {
+        return new DriverResultMock;
+    }
 
+    public function quote($input, $type = \PDO::PARAM_STR)
+    {
+        
+    }
 
-	public function query()
-	{
-		return new StatementMock;
-	}
+    public function exec(string $sql): int
+    {
+        return 0;
+    }
 
+    public function lastInsertId($name = NULL)
+    {
+        
+    }
 
+    public function beginTransaction()
+    {
+        
+    }
 
-	public function quote($input, $type = \PDO::PARAM_STR)
-	{
-	}
+    public function commit()
+    {
+        
+    }
 
+    public function rollBack()
+    {
+        
+    }
 
+    public function errorCode()
+    {
+        
+    }
 
-	public function exec($statement)
-	{
-	}
+    public function errorInfo()
+    {
+        
+    }
 
-
-
-	public function lastInsertId($name = NULL)
-	{
-	}
-
-
-
-	public function beginTransaction()
-	{
-	}
-
-
-
-	public function commit()
-	{
-	}
-
-
-
-	public function rollBack()
-	{
-	}
-
-
-
-	public function errorCode()
-	{
-	}
-
-
-
-	public function errorInfo()
-	{
-	}
 }

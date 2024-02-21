@@ -11,17 +11,11 @@
             "email": "filip@prochazka.su"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/dek-cz/dbal"
-        }
-    ],
     "require": {
         "php": "^8.2",
         "psr/cache": "^1.0",
-        "doctrine/orm": "^2.9 <2.13",
-        "doctrine/dbal": "~2.13.10",
+        "doctrine/orm": "^2.16",
+        "doctrine/dbal": "^3.0",
         "doctrine/common": "^3.3",
         "doctrine/collections": "^1.6.8",
         "doctrine/persistence": "^3.0",
@@ -31,8 +25,9 @@
         "nette/utils": "^3.1|^4.0",
         "nette/finder": "^2.5",
         "contributte/console": "^0.10.1",
-        "nette/php-generator": "^3.6",
-        "symfony/console": "^6.0"
+        "nette/php-generator": "^3.6 || ^4.0",
+        "symfony/console": "^7.0.2",
+        "dek-cz/evm": "dev-main"
     },
     "suggest": {
         "kdyby/doctrine-magic-accessors": "Fast-prototyping magic accessors trait for Doctrine entities",
@@ -41,7 +36,6 @@
         "kdyby/doctrine-dbal-batchimport": "Batch import & execute utils for effective processing of SQL Imports from files and strings"
     },
     "require-dev": {
-        "kdyby/events": "^3.1.1@dev",
         "nette/bootstrap": "^3.1",
         "nette/caching": "^3.1",
         "nette/http": "^3.1",
@@ -53,7 +47,8 @@
         "phpunit/php-code-coverage": "^9.2",
         "php-coveralls/php-coveralls": "^2.4",
         "ninjify/qa": "^0.12.1",
-        "phpstan/phpstan-strict-rules": "^0.12.9"
+        "phpstan/phpstan-strict-rules": "^0.12.9",
+        "dg/bypass-finals": "dev-master"
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -73,6 +68,12 @@
     "extra": {
         "branch-alias": {
             "dev-master": "4.0-dev"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "dek-cz/*": true
         }
     }
 }

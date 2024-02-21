@@ -3,7 +3,7 @@
 namespace KdybyTests\Doctrine;
 
 use Doctrine;
-use Kdyby\Doctrine\Events;
+use Doctrine\ORM\Events;
 
 class MetadataEventSubscriberMock implements Doctrine\Common\EventSubscriber
 {

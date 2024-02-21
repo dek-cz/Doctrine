@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Test: Kdyby\Doctrine\Events.
  *
@@ -10,6 +9,7 @@
 
 namespace KdybyTests\Doctrine;
 
+use DekApps\Evm\Evm;
 use Doctrine;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Kdyby;
@@ -17,172 +17,146 @@ use Tester\Assert;
 
 require_once __DIR__ . '/../bootstrap.php';
 
-
-
 /**
  * @author Filip Procházka <filip@prochazka.su>
  */
 class EventsCompatibilityTest extends ORMTestCase
 {
 
-	/**
-	 * @var Kdyby\Doctrine\EntityManager
-	 */
-	private $em;
+    /**
+     * @var Kdyby\Doctrine\EntityManager
+     */
+    private $em;
 
+    protected function setUp()
+    {
+        $this->em = $this->createMemoryManagerWithSchema([
+            __DIR__ . '/config/events.neon',
+        ]);
+    }
 
+    public function testOuterRegister_new()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
-	protected function setUp()
-	{
-		$this->em = $this->createMemoryManagerWithSchema([
-			__DIR__ . '/config/events.neon',
-		]);
-	}
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
+        $outerEvm->addEventSubscriber($new = new NewListener());
 
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-	public function testOuterRegister_new()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        Assert::same([[$args]], $new->calls);
+    }
 
-		$outerEvm->addEventSubscriber($new = new NewListener());
+    public function testOuterRegister_old()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
+        $outerEvm->addEventSubscriber($old = new OldListener());
 
-		Assert::same([[$args]], $new->calls);
-	}
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
+        Assert::same([[$args]], $old->calls);
+    }
 
-	public function testOuterRegister_old()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
+    public function testOuterRegister_combined()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-		$outerEvm->addEventSubscriber($old = new OldListener());
+        $outerEvm->addEventSubscriber($old = new OldListener());
+        $outerEvm->addEventSubscriber($new = new NewListener());
 
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
-		Assert::same([[$args]], $old->calls);
-	}
+        Assert::same([[$args]], $old->calls);
+        Assert::same([[$args]], $new->calls);
+    }
 
+    public function testInnerRegister_new()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
+        /** @var Evm $innerEvm */
+        $innerEvm = $this->serviceLocator->getByType(Evm::class);
+        Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
-	public function testOuterRegister_combined()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $innerEvm->addEventSubscriber($new = new NewListener());
 
-		$outerEvm->addEventSubscriber($old = new OldListener());
-		$outerEvm->addEventSubscriber($new = new NewListener());
+        Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
+        Assert::same([[$args]], $new->calls);
+    }
 
-		Assert::same([[$args]], $old->calls);
-		Assert::same([[$args]], $new->calls);
-	}
+    public function testInnerRegister_old()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
+        /** @var Kdyby\Events\EventManager $innerEvm */
+        $innerEvm = $this->serviceLocator->getByType(Evm::class);
+        Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+        $innerEvm->addEventSubscriber($old = new OldListener());
 
-	public function testInnerRegister_new()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
+        Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
-		/** @var Kdyby\Events\EventManager $innerEvm */
-		$innerEvm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        Assert::same([[$args]], $old->calls);
+    }
 
-		$innerEvm->addEventSubscriber($new = new NewListener());
+    public function testInnerRegister_combined()
+    {
+        Assert::type(Evm::class, $this->em->getEventManager());
 
-		Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        /** @var Kdyby\Events\EventManager $innerEvm */
+        $innerEvm = $this->serviceLocator->getByType(Evm::class);
+        Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::false($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
+        $outerEvm = $this->em->getEventManager();
+        Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        $innerEvm->addEventSubscriber($old = new OldListener());
+        $innerEvm->addEventSubscriber($new = new NewListener());
+        
+        Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::true($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
+        Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
+//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
-		Assert::same([[$args]], $new->calls);
-	}
+        $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
-
-
-	public function testInnerRegister_old()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
-
-		/** @var Kdyby\Events\EventManager $innerEvm */
-		$innerEvm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$innerEvm->addEventSubscriber($old = new OldListener());
-
-		Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
-
-		Assert::same([[$args]], $old->calls);
-	}
-
-
-
-	public function testInnerRegister_combined()
-	{
-		Assert::type(\Kdyby\Events\NamespacedEventManager::class, $this->em->getEventManager());
-
-		/** @var Kdyby\Events\EventManager $innerEvm */
-		$innerEvm = $this->serviceLocator->getByType(\Kdyby\Events\EventManager::class);
-		Assert::false($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$outerEvm = $this->em->getEventManager();
-		Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$innerEvm->addEventSubscriber($old = new OldListener());
-		$innerEvm->addEventSubscriber($new = new NewListener());
-
-		Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($innerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-		Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
-
-		$outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
-
-		Assert::same([[$args]], $old->calls);
-		Assert::same([[$args]], $new->calls);
-	}
+        Assert::same([[$args]], $old->calls);
+        Assert::same([[$args]], $new->calls);
+    }
 
 }
 

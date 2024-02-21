@@ -1,0 +1,3 @@
+[CLI Server]
+; Whether the CLI web server uses ANSI color coding in its terminal output.
+cli_server.color="0"
