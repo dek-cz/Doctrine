@@ -74,7 +74,6 @@ class InlineParamsBuilder extends Kdyby\Doctrine\QueryBuilder
     public function where($predicates)
     {
         parent::where(...Helpers::separateParameters($this, func_get_args()));
-//        call_user_func_array('parent::where', Helpers::separateParameters($this, func_get_args()));
         return $this;
     }
 
@@ -85,7 +84,6 @@ class InlineParamsBuilder extends Kdyby\Doctrine\QueryBuilder
     public function andWhere()
     {
         parent::andWhere(...Helpers::separateParameters($this, func_get_args()));
-//        call_user_func_array('parent::andWhere', Helpers::separateParameters($this, func_get_args()));
         return $this;
     }
 
@@ -96,7 +94,6 @@ class InlineParamsBuilder extends Kdyby\Doctrine\QueryBuilder
     public function orWhere()
     {
         parent::orWhere(...Helpers::separateParameters($this, func_get_args()));
-//        call_user_func_array('parent::orWhere', Helpers::separateParameters($this, func_get_args()));
         return $this;
     }
 
