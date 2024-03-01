@@ -25,6 +25,7 @@ use Nette\PhpGenerator as Code;
 use Nette\PhpGenerator\Method;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Kdyby\Annotations\DI\AnnotationsExtension;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
@@ -543,7 +544,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
         $configuration = $builder->addDefinition($this->prefix($name . '.dbalConfiguration'))
             ->setClass(Doctrine\DBAL\Configuration::class)
             ->addSetup('setResultCacheImpl', [$this->processCache($config['resultCache'], $name . '.dbalResult')])
-            ->addSetup('setSQLLogger', [new Statement(Doctrine\DBAL\Logging\LoggerChain::class)])
+//            ->addSetup('setSQLLogger', [new Statement(Doctrine\DBAL\Logging\LoggerChain::class)])
             ->addSetup('setSchemaAssetsFilter', [$config['schemaFilter']])
             ->setAutowired(FALSE);
 
@@ -588,7 +589,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         if (!is_bool($config['logging'])) {
             $fileLogger = new Statement(Kdyby\Doctrine\Diagnostics\FileLogger::class, [Nette\DI\Helpers::expand($config['logging'], $builder->parameters)]);
-            $configuration->addSetup('$service->getSQLLogger()->addLogger(?)', [$fileLogger]);
+            $configuration->addSetup('$service->setMiddlewares(?)', [(new Middleware($fileLogger))]);
         } elseif ($config['logging']) {
             $connection->addSetup('?->enableLogging()', [new Code\PhpLiteral('$panel')]);
         }
