@@ -41,12 +41,10 @@ class EventsCompatibilityTest extends ORMTestCase
 
         $outerEvm = $this->em->getEventManager();
         Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->addEventSubscriber($new = new NewListener());
 
         Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
@@ -59,12 +57,11 @@ class EventsCompatibilityTest extends ORMTestCase
 
         $outerEvm = $this->em->getEventManager();
         Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->addEventSubscriber($old = new OldListener());
+        var_dump(get_class($outerEvm));
 
         Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
@@ -77,13 +74,11 @@ class EventsCompatibilityTest extends ORMTestCase
 
         $outerEvm = $this->em->getEventManager();
         Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::false($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->addEventSubscriber($old = new OldListener());
         $outerEvm->addEventSubscriber($new = new NewListener());
 
         Assert::true($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
-//        Assert::true($outerEvm->hasListeners(Kdyby\Doctrine\Events::onFlush));
 
         $outerEvm->dispatchEvent(Doctrine\ORM\Events::onFlush, $args = new OnFlushEventArgs($this->em));
 
@@ -102,6 +97,7 @@ class EventsCompatibilityTest extends ORMTestCase
         $outerEvm = $this->em->getEventManager();
         Assert::false($outerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
 
+        Assert::true($innerEvm === $outerEvm);
         $innerEvm->addEventSubscriber($new = new NewListener());
 
         Assert::true($innerEvm->hasListeners(Doctrine\ORM\Events::onFlush));
