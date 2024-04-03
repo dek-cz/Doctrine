@@ -15,6 +15,7 @@ use Doctrine\Persistence\Proxy;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\SqlFormatter\NullHighlighter;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Kdyby;
 use Kdyby\Doctrine\Tracy\DbalLogger;
@@ -524,7 +525,7 @@ class Panel implements IBarPanel, DbalLogger, LoggerInterface
         }
 
 
-        $query = (new SqlFormatter())->format($query);
+        $query = (new SqlFormatter(new NullHighlighter()))->format($query);
 
         $formattedParams = [];
         foreach ($params as $key => $param) {
