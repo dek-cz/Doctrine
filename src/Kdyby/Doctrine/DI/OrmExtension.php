@@ -25,7 +25,7 @@ use Nette\PhpGenerator as Code;
 use Nette\PhpGenerator\Method;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
-use Doctrine\DBAL\Logging\Middleware;
+use Kdyby\Doctrine\Tracy\Middleware;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Kdyby\Annotations\DI\AnnotationsExtension;
 use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
@@ -582,6 +582,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         if ($this->isTracyPresent()) {
             $connection->addSetup('$panel = ?->bindConnection(?)', [$this->prefix('@' . $name . '.diagnosticsPanel'), '@self']);
+            $configuration->addSetup('$service->setMiddlewares(array_merge($service->getMiddlewares(),?))', [[new Statement(Middleware::class, [$this->prefix('@' . $name . '.diagnosticsPanel')])]]);
         }
 
         /** @var Nette\DI\ServiceDefinition $connection */
@@ -589,10 +590,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
         if (!is_bool($config['logging'])) {
             $fileLogger = new Statement(Kdyby\Doctrine\Diagnostics\FileLogger::class, [Nette\DI\Helpers::expand($config['logging'], $builder->parameters)]);
-            $configuration->addSetup('$service->setMiddlewares(?)', [(new Middleware($fileLogger))]);
-        } elseif ($config['logging']) {
-            $connection->addSetup('?->enableLogging()', [new Code\PhpLiteral('$panel')]);
-        }
+            $configuration->addSetup('$service->setMiddlewares(array_merge($service->getMiddlewares(),?))', [(new Middleware($fileLogger))]);
+        } 
+
 
         return $this->prefix('@' . $name . '.connection');
     }

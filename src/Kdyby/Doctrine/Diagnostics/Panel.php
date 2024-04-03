@@ -15,9 +15,12 @@ use Doctrine\Persistence\Proxy;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\SqlFormatter\SqlFormatter;
 use Kdyby;
+use Kdyby\Doctrine\Tracy\DbalLogger;
 use Nette;
 use Nette\Utils\Strings;
+use Psr\Log\LoggerInterface;
 use Tracy\Bar;
 use Tracy\BlueScreen;
 use Tracy\Debugger;
@@ -32,7 +35,7 @@ use Tracy\IBarPanel;
  * @author Patrik Votoček
  * @author Filip Procházka <filip@prochazka.su>
  */
-class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
+class Panel implements IBarPanel, DbalLogger, LoggerInterface
 {
 
     use \Nette\SmartObject;
@@ -75,6 +78,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
      * @var \Doctrine\ORM\EntityManager
      */
     private $em;
+
+    private array $connParams = [];
 
     /*     * *************** Doctrine\DBAL\Logging\SQLLogger ******************* */
 
@@ -176,8 +181,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
             $host = 'path: ' . basename($connParams['path']);
         } else {
             $host = sprintf('host: %s%s/%s',
-                $this->connection->getHost(),
-                (($p = $this->connection->getPort()) ? ':' . $p : ''),
+                (isset($this->connParams['host']) ? $this->connParams['host'] : ''),
+                (isset($this->connParams['port']) ? $this->connParams['port'] : ''),
                 $this->connection->getDatabase()
             );
         }
@@ -518,11 +523,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
             }
         }
 
-        try {
-            list($query, $params, $types) = \Doctrine\DBAL\SQLParserUtils::expandListParameters($query, $params, $types);
-        } catch (Doctrine\DBAL\SQLParserUtilsException $e) {
-            
-        }
+
+        $query = (new SqlFormatter())->format($query);
 
         $formattedParams = [];
         foreach ($params as $key => $param) {
@@ -571,7 +573,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
     /**
      * @param \Doctrine\Common\Annotations\AnnotationException $e
-     * @return string|bool
+     * @return stringbool
      */
     public static function highlightAnnotationLine(AnnotationException $e)
     {
@@ -719,21 +721,6 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
         }
     }
 
-    /*     * **************** Registration ******************** */
-
-    public function enableLogging()
-    {
-        if ($this->connection === NULL) {
-            throw new Kdyby\Doctrine\InvalidStateException("Doctrine Panel is not bound to connection.");
-        }
-
-        $config = $this->connection->getConfiguration();
-        $logger = $config->getSQLLogger();
-        $middlewares = $config->getMiddlewares();
-        $middlewares[] = $this;
-        $config->setMiddlewares($middlewares);
-    }
-
     /**
      * @param \Doctrine\DBAL\Connection $connection
      * @return Panel
@@ -791,6 +778,61 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
         Debugger::getBlueScreen()->addPanel(function ($e) use ($dic) {
             return Panel::renderException($e, $dic);
         });
+    }
+
+    public function log($level, $message, mixed $context = []): void
+    {
+        
+    }
+
+    public function alert($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function debug($message, mixed $context = []): void
+    {
+        
+    }
+
+    public function critical($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function emergency($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function error($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function info($message, mixed $context = []): void
+    {
+//        var_dump($context);
+    }
+
+    public function notice($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function warning($message, mixed $context = []): void
+    {
+        ;
+    }
+
+    public function connect(array $params): void
+    {
+        $this->connParams = $params;
+    }
+
+    public function disconnect(): void
+    {
+        
     }
 
 }

@@ -27,7 +27,8 @@
         "contributte/console": "^0.10.1",
         "nette/php-generator": "^3.6 || ^4.0",
         "symfony/console": "^7.0.2",
-        "dek-cz/evm": "dev-main"
+        "dek-cz/evm": "dev-main",
+        "doctrine/sql-formatter": "1.2.x-dev"
     },
     "suggest": {
         "kdyby/doctrine-magic-accessors": "Fast-prototyping magic accessors trait for Doctrine entities",

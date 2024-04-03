@@ -13,11 +13,13 @@ use Doctrine;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Kdyby;
 use Nette;
 use PDO;
 use Tracy;
+use SensitiveParameter;
 
 /**
  * @author Filip Procházka <filip@prochazka.su>
@@ -58,6 +60,20 @@ class Connection extends Doctrine\DBAL\Connection
      * @var array
      */
     private $dbalTypes = [];
+
+    
+//    public function __construct(
+//        #[SensitiveParameter]
+//        array $params,
+//        Driver $driver,
+//        ?Configuration $config = null,
+//        ?EventManager $eventManager = null
+//    ) {
+//        var_dump($driver);exit;
+//        
+//        parent::__construct($params, $driver, $config, $eventManager);
+//    }
+
 
     /**
      * @internal
